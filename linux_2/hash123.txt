@@ -1,0 +1,3 @@
+SHA256 的 123.txt 哈希:
+a1dd3d7620fbf90555eeb45dd29c90f047103a0781f97d542e719799264c2aec
+CertUtil: -hashfile 命令成功完成。
