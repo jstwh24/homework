@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>归并排序可视化（带分步功能）</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 400px;
+            margin: 40px 0;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #fcfdfe;
+        }
+
+        .array-bar {
+            width: 40px;
+            margin: 0 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .bar-value {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .bar-visual {
+            width: 100%;
+            min-height: 5px;
+            background-color: #3498db;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            position: relative;
+        }
+
+        .status-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .step-indicator {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .operation-desc {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .unprocessed { background-color: #3498db; }
+        .comparing { background-color: #f39c12; }
+        .merged { background-color: #2ecc71; }
+        .current { background-color: #e74c3c; }
+        .inactive { background-color: #95a5a6; }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .speed-control label {
+            font-size: 14px;
+        }
+        
+        .speed-control input {
+            width: 150px;
+        }
+        
+        .step-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .step-btn {
+            padding: 8px 15px;
+            background-color: #9b59b6;
+            font-size: 14px;
+        }
+        
+        .step-btn:hover:not(:disabled) {
+            background-color: #8e44ad;
+        }
+        
+        .info-panel {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f4fc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>归并排序算法可视化（分步模式）</h1>
+    <p class="subtitle">演示分治策略的排序过程 - 支持手动分步控制</p>
+    
+    <div class="container">
+        <div class="controls">
+            <input type="text" id="arrayInput" placeholder="输入数字，用逗号分隔，如: 64,34,25,12,22,11,90" value="64,34,25,12,22,11,90">
+            <button onclick="generateRandomArray()">生成随机数组</button>
+            <button onclick="startSorting()" id="sortBtn">开始自动排序</button>
+            <button onclick="startStepByStep()" id="stepBtn">开始分步模式</button>
+            <button onclick="resetVisualization()" id="resetBtn">重置</button>
+            
+            <div class="speed-control">
+                <label for="speedSlider">动画速度:</label>
+                <input type="range" id="speedSlider" min="1" max="100" value="50">
+            </div>
+        </div>
+
+        <div class="array-container" id="arrayContainer">
+            <!-- 数组条形图将在这里生成 -->
+        </div>
+
+        <div class="status-info">
+            <div class="step-indicator" id="stepIndicator">就绪</div>
+            <div class="operation-desc" id="operationDesc">点击"开始分步模式"按钮启动手动排序</div>
+        </div>
+
+        <div class="step-controls" id="stepControls" style="display: none;">
+            <button class="step-btn" id="prevStep" onclick="prevStep()" disabled>上一步</button>
+            <button class="step-btn" id="nextStep" onclick="nextStep()" disabled>下一步</button>
+            <button class="step-btn" id="playPauseBtn" onclick="togglePlayPause()">播放</button>
+            <button class="step-btn" id="exitStepMode" onclick="exitStepMode()">退出分步</button>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <strong>提示：</strong> 在分步模式下，您可以使用"下一步"按钮逐步执行归并排序，或使用"播放"按钮自动运行。
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color unprocessed"></div>
+                <span>未处理</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color comparing"></div>
+                <span>正在比较</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color merged"></div>
+                <span>已合并</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color current"></div>
+                <span>当前处理</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color inactive"></div>
+                <span>非活动区域</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let array = [];
+        let originalArray = [];
+        let isSorting = false;
+        let isStepping = false;
+        let animationSpeed = 500; // 初始动画速度（毫秒）
+        let sortSteps = [];       // 存储排序步骤
+        let currentStepIndex = -1; // 当前步骤索引
+        let autoPlayInterval = null; // 自动播放定时器
+        let abortController = null; // 用于中断异步操作
+        
+        // DOM元素引用
+        const arrayContainer = document.getElementById('arrayContainer');
+        const arrayInput = document.getElementById('arrayInput');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const operationDesc = document.getElementById('operationDesc');
+        const sortBtn = document.getElementById('sortBtn');
+        const stepBtn = document.getElementById('stepBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const stepControls = document.getElementById('stepControls');
+        const prevStepBtn = document.getElementById('prevStep');
+        const nextStepBtn = document.getElementById('nextStep');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const exitStepModeBtn = document.getElementById('exitStepMode');
+        const infoPanel = document.getElementById('infoPanel');
+        
+        // 初始化
+        function init() {
+            updateSpeed();
+            generateRandomArray();
+            speedSlider.addEventListener('input', updateSpeed);
+        }
+        
+        // 更新动画速度
+        function updateSpeed() {
+            // 将滑块值转换为实际延迟时间（反比关系）
+            const sliderValue = parseInt(speedSlider.value);
+            // 使用对数缩放，使低速端更敏感
+            animationSpeed = Math.max(50, 1050 - sliderValue * 10);
+        }
+        
+        // 生成随机数组
+        function generateRandomArray() {
+            if (isSorting) return;
+            
+            const size = 15; // 默认数组大小
+            array = [];
+            for (let i = 0; i < size; i++) {
+                array.push(Math.floor(Math.random() * 90) + 10); // 随机数范围10-99
+            }
+            arrayInput.value = array.join(',');
+            renderArray();
+        }
+        
+        // 解析输入数组
+        function parseInputArray() {
+            try {
+                const input = arrayInput.value.trim();
+                if (!input) {
+                    alert("请输入数组!");
+                    return false;
+                }
+                
+                const values = input.split(',').map(item => parseInt(item.trim()));
+                if (values.some(isNaN)) {
+                    alert("请输入有效的数字，用逗号分隔!");
+                    return false;
+                }
+                
+                array = values;
+                originalArray = [...array];
+                return true;
+            } catch (e) {
+                alert("输入格式错误!");
+                return false;
+            }
+        }
+        
+        // 渲染数组
+        function renderArray(colors = {}, stepIndex = -1) {
+            arrayContainer.innerHTML = '';
+            const maxValue = Math.max(...array, 1);
+            
+            array.forEach((value, index) => {
+                const barContainer = document.createElement('div');
+                barContainer.className = 'array-bar';
+                barContainer.style.height = '100%';
+                
+                const barHeight = (value / maxValue) * 350; // 最大高度350px
+                
+                const barVisual = document.createElement('div');
+                barVisual.className = 'bar-visual';
+                barVisual.style.height = `${barHeight}px`;
+                
+                // 设置颜色
+                if (colors[index]) {
+                    barVisual.style.backgroundColor = colors[index];
+                } else {
+                    barVisual.style.backgroundColor = '#3498db'; // 默认蓝色
+                }
+                
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.textContent = value;
+                
+                // 将数值放在柱子上方（如果柱子太短）
+                if (barHeight < 30) {
+                    barContainer.appendChild(barValue);
+                    barContainer.appendChild(barVisual);
+                } else {
+                    barContainer.appendChild(barVisual);
+                    barVisual.appendChild(barValue);
+                }
+                
+                arrayContainer.appendChild(barContainer);
+            });
+            
+            // 如果有步骤信息，更新UI
+            if (stepIndex !== -1) {
+                stepIndicator.textContent = `步骤 ${stepIndex + 1} / ${sortSteps.length}`;
+            }
+        }
+        
+        // 延迟函数
+        function sleep(ms) {
+            return new Promise(resolve => {
+                // 如果有abort控制器，检查是否需要中止
+                if (abortController && abortController.signal.aborted) {
+                    resolve();
+                    return;
+                }
+                
+                const timeoutId = setTimeout(() => {
+                    resolve();
+                }, ms);
+                
+                // 注册中止逻辑
+                if (abortController) {
+                    abortController.signal.addEventListener('abort', () => {
+                        clearTimeout(timeoutId);
+                        resolve();
+                    });
+                }
+            });
+        }
+        
+        // 归并排序主函数（异步）
+        async function mergeSortAsync(arr, left, right) {
+            // 检查是否被中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            if (left >= right) {
+                // 标记单个元素为已合并
+                const colors = {};
+                for (let i = 0; i < arr.length; i++) {
+                    if (i >= left && i <= right) {
+                        colors[i] = '#2ecc71';
+                    } else {
+                        colors[i] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                renderArray(colors);
+                operationDesc.textContent = `子数组 [${arr[left]}] 已有序（单元素）`;
+                await sleep(animationSpeed);
+                return;
+            }
+            
+            const mid = Math.floor((left + right) / 2);
+            
+            // 显示分割过程
+            operationDesc.textContent = `分割数组 [${arr.slice(left, right + 1).join(', ')}] 为 [${arr.slice(left, mid + 1).join(', ')}] 和 [${arr.slice(mid + 1, right + 1).join(', ')}]`;
+            const colors = {};
+            for (let i = 0; i < arr.length; i++) {
+                if (i >= left && i <= right) {
+                    colors[i] = (i <= mid) ? '#9b59b6' : '#3498db'; // 分割线左右不同颜色
+                } else {
+                    colors[i] = '#95a5a6'; // 非活动区域
+                }
+            }
+            renderArray(colors);
+            await sleep(animationSpeed);
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 递归排序左半部分
+            await mergeSortAsync(arr, left, mid);
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 递归排序右半部分
+            await mergeSortAsync(arr, mid + 1, right);
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 合并两个有序数组
+            await mergeAsync(arr, left, mid, right);
+        }
+        
+        // 合并函数（异步）
+        async function mergeAsync(arr, left, mid, right) {
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            operationDesc.textContent = `合并子数组 [${arr.slice(left, mid + 1).join(', ')}] 和 [${arr.slice(mid + 1, right + 1).join(', ')}]`;
+            
+            // 显示要合并的部分
+            const colors = {};
+            for (let i = 0; i < arr.length; i++) {
+                if (i >= left && i <= right) {
+                    colors[i] = (i <= mid) ? '#f1c40f' : '#e67e22'; // 左右两部分不同颜色
+                } else {
+                    colors[i] = '#95a5a6'; // 非活动区域
+                }
+            }
+            renderArray(colors);
+            await sleep(animationSpeed * 1.2);
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 创建临时数组
+            const leftArr = arr.slice(left, mid + 1);
+            const rightArr = arr.slice(mid + 1, right + 1);
+            
+            let i = 0, j = 0, k = left;
+            
+            // 合并过程
+            while (i < leftArr.length && j < rightArr.length) {
+                // 检查中止
+                if (abortController && abortController.signal.aborted) return;
+                
+                // 高亮当前比较的元素
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        if (idx < left + i || idx >= left + leftArr.length + j) {
+                            colors[idx] = '#2ecc71'; // 已合并
+                        } else if (idx === left + i || idx === mid + 1 + j) {
+                            colors[idx] = '#e74c3c'; // 当前比较
+                        } else if (idx <= mid) {
+                            colors[idx] = '#f1c40f'; // 左侧剩余
+                        } else {
+                            colors[idx] = '#e67e22'; // 右侧剩余
+                        }
+                    } else {
+                        colors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                renderArray(colors);
+                operationDesc.textContent = `比较 ${leftArr[i]} 和 ${rightArr[j]}, 将较小者放入结果`;
+                await sleep(animationSpeed);
+                
+                // 检查中止
+                if (abortController && abortController.signal.aborted) return;
+                
+                if (leftArr[i] <= rightArr[j]) {
+                    arr[k] = leftArr[i];
+                    i++;
+                } else {
+                    arr[k] = rightArr[j];
+                    j++;
+                }
+                
+                // 更新主数组显示
+                array[k] = arr[k];
+                k++;
+                
+                // 更新颜色表示已放置的元素
+                for (let p = left; p < k; p++) {
+                    colors[p] = '#2ecc71'; // 已合并
+                }
+                
+                renderArray(colors);
+                operationDesc.textContent = `已合并 ${k - left} 个元素`;
+                await sleep(animationSpeed * 0.8);
+            }
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 复制左数组剩余元素
+            while (i < leftArr.length) {
+                // 检查中止
+                if (abortController && abortController.signal.aborted) return;
+                
+                arr[k] = leftArr[i];
+                array[k] = arr[k];
+                i++; 
+                k++;
+                
+                // 更新颜色
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        colors[idx] = (idx < k) ? '#2ecc71' : (idx <= mid) ? '#f1c40f' : '#e67e22'; // 已合并 vs 剩余
+                    } else {
+                        colors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                renderArray(colors);
+                operationDesc.textContent = `复制左数组剩余元素`;
+                await sleep(animationSpeed * 0.8);
+            }
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 复制右数组剩余元素
+            while (j < rightArr.length) {
+                // 检查中止
+                if (abortController && abortController.signal.aborted) return;
+                
+                arr[k] = rightArr[j];
+                array[k] = arr[k];
+                j++;
+                k++;
+                
+                // 更新颜色
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        colors[idx] = (idx < k) ? '#2ecc71' : (idx <= mid) ? '#f1c40f' : '#e67e22'; // 已合并 vs 剩余
+                    } else {
+                        colors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                renderArray(colors);
+                operationDesc.textContent = `复制右数组剩余元素`;
+                await sleep(animationSpeed * 0.8);
+            }
+            
+            // 检查中止
+            if (abortController && abortController.signal.aborted) return;
+            
+            // 标记整个合并区域为已合并
+            for (let idx = 0; idx < arr.length; idx++) {
+                if (idx >= left && idx <= right) {
+                    colors[idx] = '#2ecc71'; // 绿色表示已合并
+                } else {
+                    colors[idx] = '#95a5a6'; // 非活动区域
+                }
+            }
+            renderArray(colors);
+            operationDesc.textContent = `成功合并 [${arr.slice(left, mid + 1).join(', ')}] 和 [${arr.slice(mid + 1, right + 1).join(', ')}]`;
+            await sleep(animationSpeed);
+        }
+        
+        // 开始自动排序
+        async function startSorting() {
+            if (isSorting) return;
+            
+            if (!parseInputArray()) return;
+            
+            isSorting = true;
+            isStepping = false;
+            sortBtn.disabled = true;
+            stepBtn.disabled = true;
+            resetBtn.disabled = true;
+            arrayInput.disabled = true;
+            
+            stepControls.style.display = 'none';
+            infoPanel.innerHTML = '<strong>提示：</strong> 正在自动执行归并排序...';
+            
+            stepIndicator.textContent = "开始排序";
+            operationDesc.textContent = "正在进行归并排序...";
+            
+            // 重新渲染数组，准备开始排序
+            renderArray();
+            
+            // 创建新的AbortController用于控制当前排序过程
+            abortController = new AbortController();
+            
+            try {
+                // 执行归并排序
+                await mergeSortAsync([...array], 0, array.length - 1);
+                
+                // 检查是否被中止
+                if (abortController && abortController.signal.aborted) {
+                    stepIndicator.textContent = "排序已取消";
+                    operationDesc.textContent = "排序过程已被用户取消";
+                    return;
+                }
+                
+                // 排序完成
+                stepIndicator.textContent = "排序完成!";
+                operationDesc.textContent = `最终排序结果: [${array.join(', ')}]`;
+                
+                // 将所有柱子变为绿色
+                const finalColors = {};
+                for (let i = 0; i < array.length; i++) {
+                    finalColors[i] = '#2ecc71'; // 绿色
+                }
+                renderArray(finalColors);
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('排序出错:', error);
+                }
+            } finally {
+                isSorting = false;
+                sortBtn.disabled = false;
+                stepBtn.disabled = false;
+                resetBtn.disabled = false;
+                arrayInput.disabled = false;
+                
+                // 重置abort控制器
+                abortController = null;
+            }
+        }
+        
+        // 开始分步模式
+        function startStepByStep() {
+            if (isSorting) return;
+            
+            if (!parseInputArray()) return;
+            
+            isSorting = true;
+            isStepping = true;
+            sortBtn.disabled = true;
+            stepBtn.disabled = true;
+            resetBtn.disabled = true;
+            arrayInput.disabled = true;
+            
+            stepControls.style.display = 'flex';
+            infoPanel.innerHTML = '<strong>提示：</strong> 您现在处于分步模式，使用下方按钮控制排序进度。';
+            
+            stepIndicator.textContent = "分步模式就绪";
+            operationDesc.textContent = "点击'下一步'开始排序";
+            
+            // 重新渲染数组
+            renderArray();
+            
+            // 生成排序步骤
+            generateSortSteps();
+            
+            // 启用下一步按钮
+            nextStepBtn.disabled = false;
+            prevStepBtn.disabled = true;
+            playPauseBtn.textContent = '播放';
+        }
+        
+        // 生成排序步骤
+        function generateSortSteps() {
+            sortSteps = [];
+            currentStepIndex = -1;
+            
+            // 创建数组副本用于模拟排序过程
+            const tempArray = [...originalArray];
+            
+            // 递归生成步骤
+            generateMergeSteps(tempArray, 0, tempArray.length - 1);
+            
+            // 添加最终完成步骤
+            sortSteps.push({
+                array: [...tempArray],
+                colors: {},
+                description: `排序完成: [${tempArray.join(', ')}]`,
+                type: 'completed'
+            });
+        }
+        
+        // 生成归并步骤
+        function generateMergeSteps(arr, left, right) {
+            if (left >= right) {
+                // 单个元素情况
+                const colors = {};
+                for (let i = 0; i < arr.length; i++) {
+                    colors[i] = (i === left) ? '#2ecc71' : '#95a5a6';
+                }
+                
+                sortSteps.push({
+                    array: [...arr],
+                    colors: {...colors},
+                    description: `子数组 [${arr[left]}] 已有序（单元素）`,
+                    type: 'single'
+                });
+                return;
+            }
+            
+            const mid = Math.floor((left + right) / 2);
+            
+            // 记录分割步骤
+            const splitColors = {};
+            for (let i = 0; i < arr.length; i++) {
+                if (i >= left && i <= right) {
+                    splitColors[i] = (i <= mid) ? '#9b59b6' : '#3498db';
+                } else {
+                    splitColors[i] = '#95a5a6';
+                }
+            }
+            
+            sortSteps.push({
+                array: [...arr],
+                colors: {...splitColors},
+                description: `分割数组 [${arr.slice(left, right + 1).join(', ')}] 为 [${arr.slice(left, mid + 1).join(', ')}] 和 [${arr.slice(mid + 1, right + 1).join(', ')}]`,
+                type: 'split'
+            });
+            
+            // 递归处理左半部分
+            generateMergeSteps(arr, left, mid);
+            
+            // 递归处理右半部分
+            generateMergeSteps(arr, mid + 1, right);
+            
+            // 合并步骤
+            generateMergeProcess(arr, left, mid, right);
+        }
+        
+        // 生成合并过程步骤
+        function generateMergeProcess(arr, left, mid, right) {
+            // 创建左右子数组的副本
+            const leftArr = arr.slice(left, mid + 1);
+            const rightArr = arr.slice(mid + 1, right + 1);
+            
+            // 记录初始合并状态
+            const initialColors = {};
+            for (let i = 0; i < arr.length; i++) {
+                if (i >= left && i <= right) {
+                    initialColors[i] = (i <= mid) ? '#f1c40f' : '#e67e22';
+                } else {
+                    initialColors[i] = '#95a5a6';
+                }
+            }
+            
+            sortSteps.push({
+                array: [...arr],
+                colors: {...initialColors},
+                description: `准备合并子数组 [${leftArr.join(', ')}] 和 [${rightArr.join(', ')}]`,
+                type: 'merge-start'
+            });
+            
+            let i = 0, j = 0, k = left;
+            const tempResult = [...arr];
+            
+            // 模拟合并过程
+            while (i < leftArr.length && j < rightArr.length) {
+                // 高亮当前比较的元素
+                const compareColors = {};
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        if (idx < left + i || idx >= left + leftArr.length + j) {
+                            compareColors[idx] = '#2ecc71'; // 已合并
+                        } else if (idx === left + i) {
+                            compareColors[idx] = '#e74c3c'; // 左侧当前比较
+                        } else if (idx === mid + 1 + j) {
+                            compareColors[idx] = '#f39c12'; // 右侧当前比较
+                        } else if (idx <= mid) {
+                            compareColors[idx] = '#f1c40f'; // 左侧剩余
+                        } else {
+                            compareColors[idx] = '#e67e22'; // 右侧剩余
+                        }
+                    } else {
+                        compareColors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                sortSteps.push({
+                    array: [...tempResult],
+                    colors: {...compareColors},
+                    description: `比较 ${leftArr[i]} 和 ${rightArr[j]}, 将较小者放入结果`,
+                    type: 'compare'
+                });
+                
+                // 执行合并操作
+                if (leftArr[i] <= rightArr[j]) {
+                    tempResult[k] = leftArr[i];
+                    i++;
+                } else {
+                    tempResult[k] = rightArr[j];
+                    j++;
+                }
+                
+                // 更新主数组
+                arr[k] = tempResult[k];
+                k++;
+                
+                // 记录合并后的状态
+                const mergeColors = {};
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        if (idx < k) {
+                            mergeColors[idx] = '#2ecc71'; // 已合并
+                        } else if (idx <= mid) {
+                            mergeColors[idx] = '#f1c40f'; // 左侧剩余
+                        } else {
+                            mergeColors[idx] = '#e67e22'; // 右侧剩余
+                        }
+                    } else {
+                        mergeColors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                sortSteps.push({
+                    array: [...tempResult],
+                    colors: {...mergeColors},
+                    description: `已合并 ${k - left} 个元素到位置 [${left}-${right}]`,
+                    type: 'merge-progress'
+                });
+            }
+            
+            // 处理左数组剩余元素
+            while (i < leftArr.length) {
+                tempResult[k] = leftArr[i];
+                arr[k] = tempResult[k];
+                i++; 
+                k++;
+                
+                const remainingColors = {};
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        if (idx < k) {
+                            remainingColors[idx] = '#2ecc71'; // 已合并
+                        } else if (idx <= mid) {
+                            remainingColors[idx] = '#f1c40f'; // 左侧剩余
+                        } else {
+                            remainingColors[idx] = '#e67e22'; // 右侧剩余
+                        }
+                    } else {
+                        remainingColors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                sortSteps.push({
+                    array: [...tempResult],
+                    colors: {...remainingColors},
+                    description: `复制左数组剩余元素 ${leftArr[i-1]}`,
+                    type: 'copy-left'
+                });
+            }
+            
+            // 处理右数组剩余元素
+            while (j < rightArr.length) {
+                tempResult[k] = rightArr[j];
+                arr[k] = tempResult[k];
+                j++;
+                k++;
+                
+                const remainingColors = {};
+                for (let idx = 0; idx < arr.length; idx++) {
+                    if (idx >= left && idx <= right) {
+                        if (idx < k) {
+                            remainingColors[idx] = '#2ecc71'; // 已合并
+                        } else if (idx <= mid) {
+                            remainingColors[idx] = '#f1c40f'; // 左侧剩余
+                        } else {
+                            remainingColors[idx] = '#e67e22'; // 右侧剩余
+                        }
+                    } else {
+                        remainingColors[idx] = '#95a5a6'; // 非活动区域
+                    }
+                }
+                
+                sortSteps.push({
+                    array: [...tempResult],
+                    colors: {...remainingColors},
+                    description: `复制右数组剩余元素 ${rightArr[j-1]}`,
+                    type: 'copy-right'
+                });
+            }
+            
+            // 合并完成
+            const completedColors = {};
+            for (let idx = 0; idx < arr.length; idx++) {
+                if (idx >= left && idx <= right) {
+                    completedColors[idx] = '#2ecc71'; // 已合并
+                } else {
+                    completedColors[idx] = '#95a5a6'; // 非活动区域
+                }
+            }
+            
+            sortSteps.push({
+                array: [...tempResult],
+                colors: {...completedColors},
+                description: `成功合并 [${leftArr.join(', ')}] 和 [${rightArr.join(', ')}]`,
+                type: 'merge-complete'
+            });
+        }
+        
+        // 下一步
+        function nextStep() {
+            if (!isStepping || currentStepIndex >= sortSteps.length - 1) return;
+            
+            currentStepIndex++;
+            const step = sortSteps[currentStepIndex];
+            
+            // 更新数组
+            array = [...step.array];
+            
+            // 渲染当前步骤
+            renderArray(step.colors, currentStepIndex);
+            
+            // 更新描述
+            operationDesc.textContent = step.description;
+            
+            // 更新按钮状态
+            prevStepBtn.disabled = currentStepIndex === 0;
+            nextStepBtn.disabled = currentStepIndex >= sortSteps.length - 1;
+            
+            // 如果是最后一步，更新按钮文本
+            if (currentStepIndex === sortSteps.length - 1) {
+                operationDesc.textContent = `排序完成: [${array.join(', ')}]`;
+            }
+        }
+        
+        // 上一步
+        function prevStep() {
+            if (!isStepping || currentStepIndex <= 0) return;
+            
+            currentStepIndex--;
+            const step = sortSteps[currentStepIndex];
+            
+            // 更新数组
+            array = [...step.array];
+            
+            // 渲染当前步骤
+            renderArray(step.colors, currentStepIndex);
+            
+            // 更新描述
+            operationDesc.textContent = step.description;
+            
+            // 更新按钮状态
+            prevStepBtn.disabled = currentStepIndex === 0;
+            nextStepBtn.disabled = false;
+        }
+        
+        // 切换播放/暂停
+        function togglePlayPause() {
+            if (autoPlayInterval) {
+                // 停止自动播放
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                playPauseBtn.textContent = '播放';
+                
+                // 如果在分步模式下，也要停止动画
+                if (isStepping) {
+                    return;
+                }
+            } else {
+                // 开始自动播放
+                if (currentStepIndex < sortSteps.length - 1) {
+                    playPauseBtn.textContent = '暂停';
+                    autoPlayInterval = setInterval(() => {
+                        if (currentStepIndex < sortSteps.length - 1) {
+                            nextStep();
+                        } else {
+                            // 播放到最后一步后停止
+                            clearInterval(autoPlayInterval);
+                            autoPlayInterval = null;
+                            playPauseBtn.textContent = '播放';
+                        }
+                    }, animationSpeed);
+                }
+            }
+        }
+        
+        // 退出分步模式
+        function exitStepMode() {
+            if (!isStepping) return;
+            
+            // 停止自动播放
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+            }
+            
+            isStepping = false;
+            isSorting = false;
+            
+            sortBtn.disabled = false;
+            stepBtn.disabled = false;
+            resetBtn.disabled = false;
+            arrayInput.disabled = false;
+            
+            stepControls.style.display = 'none';
+            infoPanel.innerHTML = '<strong>提示：</strong> 已退出分步模式。';
+            
+            operationDesc.textContent = "已退出分步模式，可以重新开始排序";
+            stepIndicator.textContent = "已退出分步模式";
+        }
+        
+        // 重置可视化
+        function resetVisualization() {
+            // 如果在自动排序过程中，中断排序
+            if (isSorting && !isStepping) {
+                if (abortController) {
+                    abortController.abort();
+                }
+            }
+            
+            // 如果在分步模式下，先退出
+            if (isStepping) {
+                if (autoPlayInterval) {
+                    clearInterval(autoPlayInterval);
+                    autoPlayInterval = null;
+                }
+                isStepping = false;
+            }
+            
+            isSorting = false;
+            
+            sortBtn.disabled = false;
+            stepBtn.disabled = false;
+            resetBtn.disabled = false;
+            arrayInput.disabled = false;
+            
+            stepControls.style.display = 'none';
+            infoPanel.innerHTML = '<strong>提示：</strong> 提示：在分步模式下，您可以使用"下一步"按钮逐步执行归并排序，或使用"播放"按钮自动运行。';
+            
+            parseInputArray(); // 重新解析输入
+            renderArray();
+            stepIndicator.textContent = "已重置";
+            operationDesc.textContent = "请修改数组或点击开始排序";
+            
+            // 重置步骤相关变量
+            sortSteps = [];
+            currentStepIndex = -1;
+            
+            // 重置abort控制器
+            abortController = null;
+        }
+        
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
