@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>网页2D闯关游戏 - 大厅</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="hall-body">
+    <!-- ============================================================ -->
+    <!-- 游戏大厅页面 -->
+    <!-- 显示账号信息、3个存档档位、操作按钮 -->
+    <!-- ============================================================ -->
+    <div class="hall-container">
+        <!-- 顶部信息栏 -->
+        <div class="hall-header">
+            <div class="user-info">
+                <span class="user-avatar">🧑</span>
+                <span id="username-display">冒险者</span>
+            </div>
+            <div class="stats-info">
+                <span>🏆 通关次数：<strong id="total-clear">0</strong></span>
+            </div>
+            <button class="btn-logout" onclick="doLogout()">退出登录</button>
+        </div>
+
+        <!-- 游戏标题 -->
+        <div class="hall-title">
+            <h2>⚔️ 勇者冒险</h2>
+            <p>选择存档，开始你的冒险之旅</p>
+        </div>
+
+        <!-- 3个存档档位卡片 -->
+        <div class="save-slots" id="save-slots">
+            <!-- 档位1 -->
+            <div class="save-card" id="slot-1">
+                <div class="slot-number">存档 ①</div>
+                <div class="slot-info" id="slot-info-1">
+                    <p class="slot-empty">空档位</p>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-play" onclick="loadOrCreate(1)" id="btn-play-1" disabled>读取存档</button>
+                    <button class="btn-new" onclick="createSlot(1)">新建存档</button>
+                </div>
+            </div>
+
+            <!-- 档位2 -->
+            <div class="save-card" id="slot-2">
+                <div class="slot-number">存档 ②</div>
+                <div class="slot-info" id="slot-info-2">
+                    <p class="slot-empty">空档位</p>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-play" onclick="loadOrCreate(2)" id="btn-play-2" disabled>读取存档</button>
+                    <button class="btn-new" onclick="createSlot(2)">新建存档</button>
+                </div>
+            </div>
+
+            <!-- 档位3 -->
+            <div class="save-card" id="slot-3">
+                <div class="slot-number">存档 ③</div>
+                <div class="slot-info" id="slot-info-3">
+                    <p class="slot-empty">空档位</p>
+                </div>
+                <div class="slot-actions">
+                    <button class="btn-play" onclick="loadOrCreate(3)" id="btn-play-3" disabled>读取存档</button>
+                    <button class="btn-new" onclick="createSlot(3)">新建存档</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提示信息 -->
+        <p id="hall-msg" class="msg-text"></p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/hall.js') }}"></script>
+</body>
+</html>

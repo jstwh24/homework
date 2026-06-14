@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>网页2D闯关游戏</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="game-body">
+    <!-- ============================================================ -->
+    <!-- 游戏主页面 - HTML5 Canvas渲染 -->
+    <!-- ============================================================ -->
+
+    <!-- 游戏画布容器 -->
+    <div class="game-wrapper">
+        <!-- 返回大厅按钮（桌面端可见） -->
+        <button id="btn-return-hall" class="return-hall-btn" onclick="returnToHall()" title="返回大厅 (Q键)">🚪 返回大厅</button>
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+
+        <!-- 暂停/通关/死亡 弹窗浮层 -->
+        <div id="overlay" class="game-overlay" style="display:none;">
+            <div class="overlay-content">
+                <h2 id="overlay-title">游戏暂停</h2>
+                <p id="overlay-message"></p>
+                <div class="overlay-buttons" id="overlay-buttons">
+                    <!-- 动态填充按钮 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 移动端虚拟按键（触屏设备显示） -->
+        <div id="mobile-controls" class="mobile-controls" style="display:none;">
+            <!-- 方向键 -->
+            <div class="dpad">
+                <button class="dpad-btn dpad-up" id="btn-up" ontouchstart="mobileKeyDown('up')" ontouchend="mobileKeyUp('up')">▲</button>
+                <button class="dpad-btn dpad-left" id="btn-left" ontouchstart="mobileKeyDown('left')" ontouchend="mobileKeyUp('left')">◀</button>
+                <button class="dpad-btn dpad-right" id="btn-right" ontouchstart="mobileKeyDown('right')" ontouchend="mobileKeyUp('right')">▶</button>
+                <button class="dpad-btn dpad-down" id="btn-down" ontouchstart="mobileKeyDown('down')" ontouchend="mobileKeyUp('down')">▼</button>
+            </div>
+            <!-- 功能按钮 -->
+            <div class="action-btns">
+                <button class="action-btn btn-attack" ontouchstart="mobileKeyDown('attack')" ontouchend="mobileKeyUp('attack')">⚔️攻击</button>
+                <button class="action-btn btn-save-btn" onclick="manualSave()">💾存档</button>
+                <button class="action-btn btn-pause-btn" onclick="togglePause()">⏯️暂停</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Socket.IO客户端库 -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+</body>
+</html>

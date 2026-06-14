@@ -1,0 +1,69 @@
+version: '3.8'
+
+# ============================================================
+# 纯网页2D横版闯关游戏 - Docker Compose 配置
+# 两个容器：mysql-game (数据库) + game-app (Flask网页服务)
+# 端口: 5000 网页访问, 3306 数据库内部通信
+# ============================================================
+
+services:
+  # ----------------------------------------------------------
+  # MySQL 8.0 数据库容器
+  # ----------------------------------------------------------
+  mysql-game:
+    image: mysql:8.0
+    container_name: mysql-game
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"                    # 数据库端口（调试用，生产可关闭）
+    volumes:
+      - mysql_data:/var/lib/mysql      # 数据持久化卷
+      - ./mysql-db/init.sql:/docker-entrypoint-initdb.d/init.sql  # 自动建表脚本
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - game-network
+
+  # ----------------------------------------------------------
+  # Flask 网页游戏后端服务容器
+  # ----------------------------------------------------------
+  game-app:
+    build:
+      context: ./game-app
+      dockerfile: Dockerfile
+    container_name: game-app
+    restart: unless-stopped
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+    ports:
+      - "5000:5000"                    # 网页游戏访问端口
+    depends_on:
+      mysql-game:
+        condition: service_healthy     # 等待MySQL完全就绪后启动
+    networks:
+      - game-network
+
+# ----------------------------------------------------------
+# 数据卷 & 网络
+# ----------------------------------------------------------
+volumes:
+  mysql_data:                          # MySQL数据持久化存储
+    driver: local
+
+networks:
+  game-network:                        # 容器间内部通信网络
+    driver: bridge

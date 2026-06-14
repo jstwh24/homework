@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>网页2D闯关游戏 - 登录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-body">
+    <div class="login-container">
+        <div class="game-title">
+            <h1>⚔️ 勇者冒险</h1>
+            <p class="subtitle">网页2D横版闯关游戏</p>
+        </div>
+
+        <!-- 标签切换 -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="tab-login-btn">登录</button>
+            <button class="tab-btn" id="tab-register-btn">注册</button>
+        </div>
+
+        <!-- 登录表单 -->
+        <form id="login-form" class="auth-form">
+            <div class="form-group">
+                <label for="login-username">用户名</label>
+                <input type="text" id="login-username" placeholder="请输入用户名" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label for="login-password">密码</label>
+                <input type="password" id="login-password" placeholder="请输入密码" maxlength="50">
+            </div>
+            <button type="submit" class="btn-primary">登 录</button>
+            <p id="login-msg" class="msg-text"></p>
+        </form>
+
+        <!-- 注册表单（默认隐藏） -->
+        <form id="register-form" class="auth-form" style="display:none;">
+            <div class="form-group">
+                <label for="reg-username">用户名</label>
+                <input type="text" id="reg-username" placeholder="2-50个字符" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label for="reg-password">密码</label>
+                <input type="password" id="reg-password" placeholder="至少4位密码" maxlength="50">
+            </div>
+            <button type="submit" class="btn-primary">注 册</button>
+            <p id="reg-msg" class="msg-text"></p>
+        </form>
+
+        <div class="game-info-box">
+            <p>🎮 电脑：方向键移动 | 空格攻击 | S键存档 | ESC暂停</p>
+            <p>📱 手机：屏幕底部虚拟按键操作</p>
+            <p>💾 每个账号3个独立存档档位</p>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 所有JS逻辑内嵌在页面中，不依赖外部文件 -->
+    <!-- ============================================================ -->
+    <script>
+    // ---- 标签切换 ----
+    var currentTab = 'login';
+
+    document.getElementById('tab-login-btn').addEventListener('click', function() {
+        currentTab = 'login';
+        document.getElementById('login-form').style.display = 'block';
+        document.getElementById('register-form').style.display = 'none';
+        document.getElementById('tab-login-btn').classList.add('active');
+        document.getElementById('tab-register-btn').classList.remove('active');
+        clearMsg();
+    });
+
+    document.getElementById('tab-register-btn').addEventListener('click', function() {
+        currentTab = 'register';
+        document.getElementById('login-form').style.display = 'none';
+        document.getElementById('register-form').style.display = 'block';
+        document.getElementById('tab-register-btn').classList.add('active');
+        document.getElementById('tab-login-btn').classList.remove('active');
+        clearMsg();
+    });
+
+    function clearMsg() {
+        var lm = document.getElementById('login-msg');
+        lm.textContent = '';
+        lm.className = 'msg-text';
+        var rm = document.getElementById('reg-msg');
+        rm.textContent = '';
+        rm.className = 'msg-text';
+    }
+
+    function showMsg(el, message, type) {
+        el.textContent = message;
+        el.className = 'msg-text ' + type;
+    }
+
+    // ---- 登录表单提交 ----
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('登录表单提交');
+
+        var username = document.getElementById('login-username').value.trim();
+        var password = document.getElementById('login-password').value;
+        var msgEl = document.getElementById('login-msg');
+
+        if (!username || !password) {
+            showMsg(msgEl, '请输入用户名和密码', 'error');
+            return;
+        }
+
+        fetch('/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password })
+        })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+            console.log('登录响应:', data);
+            if (data.success) {
+                showMsg(msgEl, data.message, 'success');
+                setTimeout(function() {
+                    window.location.href = '/hall';
+                }, 500);
+            } else {
+                showMsg(msgEl, data.message, 'error');
+            }
+        })
+        .catch(function(err) {
+            console.error('登录错误:', err);
+            showMsg(msgEl, '网络错误，请稍后重试', 'error');
+        });
+    });
+
+    // ---- 注册表单提交 ----
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('注册表单提交');
+
+        var username = document.getElementById('reg-username').value.trim();
+        var password = document.getElementById('reg-password').value;
+        var msgEl = document.getElementById('reg-msg');
+
+        if (!username || username.length < 2) {
+            showMsg(msgEl, '用户名至少2个字符', 'error');
+            return;
+        }
+        if (!password || password.length < 4) {
+            showMsg(msgEl, '密码至少4个字符', 'error');
+            return;
+        }
+
+        fetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password })
+        })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+            console.log('注册响应:', data);
+            if (data.success) {
+                showMsg(msgEl, data.message + ' 请切换到登录页面。', 'success');
+                document.getElementById('reg-username').value = '';
+                document.getElementById('reg-password').value = '';
+                setTimeout(function() {
+                    document.getElementById('tab-login-btn').click();
+                }, 1500);
+            } else {
+                showMsg(msgEl, data.message, 'error');
+            }
+        })
+        .catch(function(err) {
+            console.error('注册错误:', err);
+            showMsg(msgEl, '网络错误，请稍后重试', 'error');
+        });
+    });
+
+    console.log('登录页面JS初始化完成');
+    </script>
+</body>
+</html>
