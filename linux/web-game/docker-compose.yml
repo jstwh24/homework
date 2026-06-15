@@ -23,7 +23,7 @@ services:
       - "3306:3306"                    # 数据库端口（调试用，生产可关闭）
     volumes:
       - mysql_data:/var/lib/mysql      # 数据持久化卷
-      - ./mysql-db/init.sql:/docker-entrypoint-initdb.d/init.sql  # 自动建表脚本
+      - ./mysql-db/init.sh:/docker-entrypoint-initdb.d/init.sh  # 自动建表脚本（密码从MYSQL_PASSWORD读取）
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
